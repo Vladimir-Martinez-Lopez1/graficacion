@@ -58,7 +58,7 @@ export class CanvasLocal {
     let p = 1 - q;
 
 
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 130; i++) {
 
       this.drawLine(xA, yA, xB, yB);
       this.drawLine(xB, yB, xC, yC);

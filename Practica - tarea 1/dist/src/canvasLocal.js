@@ -33,7 +33,7 @@ export class CanvasLocal {
         let xA1, yA1, xB1, yB1, xC1, yC1, xD1, yD1;
         let q = 0.02; //movimiento de lineas o sepacion de lineas 
         let p = 1 - q;
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 130; i++) {
             this.drawLine(xA, yA, xB, yB);
             this.drawLine(xB, yB, xC, yC);
             this.drawLine(xC, yC, xD, yD);
