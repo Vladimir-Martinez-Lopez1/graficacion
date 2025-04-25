@@ -49,15 +49,15 @@
 
   <div class="card text-center">
     <div class="card-header">
-      Generador de QR bajo el estandar Alfanumérico
+      Generador de QR bajo el estandar Alfanumérico. 
     </div>
     <div class="chart card-img-bottom">
       <canvas id="circlechart" width="640" height="480"></canvas>
     </div>
     <div class="card-body">
-      <h5 class="card-title">Ingrese los datos correspondientes</h5>
-      <label for="datosRecibidos" class="form-label"> URL o Dato a convertir: </label>
-      <input type="text" class="form-control" id="datosRecibidos" placeholder="escueladeciencias.com">
+      <h5 class="card-title">Ingrese la URL o Dato a convertir (Utiliza la codificación alfanumérica):</h5>
+      <label for="datosRecibidos" class="form-label"> Restricciones: No se aceptan caracteres especiales como ñ o @, etc., tildes, comas. </label>
+      <input type="text" class="form-control" id="datosRecibidos" placeholder="ESCUELADECIENCIAS.COM o escueladeciencias.com">
       <br>
       <button id="btnDibujar" class="btn btn-primary">Dibujar QR</button>
       <button id="btnLimpiar" class="btn btn-secondary ms-2">Limpiar</button>
