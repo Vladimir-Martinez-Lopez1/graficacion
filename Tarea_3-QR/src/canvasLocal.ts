@@ -109,7 +109,7 @@ export class CanvasLocal {
 
     //const datos = "escueladeciencias.com";
     const ocupado: boolean[][] = Array.from({ length: 25 }, () => Array(25).fill(false));
-    
+
     // Dibuja el patrón de posición en las esquinas
     const marcarPatronPosicion = (x: number, y: number) => {
       for (let i = -1; i < 8; i++) {
@@ -141,58 +141,51 @@ export class CanvasLocal {
     }
     this.dibujarPatronAlineamiento(18, 18);
 
-    // Codificar datos alfanuméricos
-    const tablaAlfa = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
-    const bits: string[] = [];
+    // Codificar datos BYTE
+    //const tablaAlfa = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
 
-    let i = 0;
-    // Se recorre la cadena de datos y se codifican en bits
-    while (i < this.datos.length) {
-      // Si hay un número impar de caracteres, se agrega un espacio en blanco al final
-      const cadena1 = this.datos[i].toUpperCase();
-      const valor1 = tablaAlfa.indexOf(cadena1);
-      if (i + 1 < this.datos.length) {
-        const cadena2 = this.datos[i + 1].toUpperCase();
-        const valor2 = tablaAlfa.indexOf(cadena2);
-        const valorFinal = 45 * valor1 + valor2;
-        bits.push(valorFinal.toString(2).padStart(11, '0'));
-        i += 2;
-      } else {
-        bits.push(valor1.toString(2).padStart(6, '0'));
-        i += 1;
-      }
+
+    const bits: string[] = [];
+    //Indica el modo BYTE
+    bits.push('0100');
+
+    //indica la longitud del mensaje
+    bits.push(this.datos.length.toString(2).padStart(8, '0'));
+
+    //Conversion de datos en ASCII a binario
+    for (const c of this.datos) {
+      const ascii = c.charCodeAt(0);
+      bits.push(ascii.toString(2).padStart(8, '0'));
     }
-    // Agregar el terminador de datos
+
+    // Agregar el terminador de datos para el relleno de bits
     const flujoDeBits = bits.join('').padEnd(152, '0');
-    let fila = 24;
-    let columnas = 24;
-    let dir = -1;
+    let subir = true;
     let indiceDeBit = 0;
 
     //recorre el flujo de bits y dibuja los pixeles en el canvas mientras se asegura de que no se sobrepase el limite del canvas
-    while (columnas > 0 && indiceDeBit < flujoDeBits.length) {
-      if (columnas === 6) columnas--;
+    // Siempre de derecha a izquierda
+    for (let col = 24; col >= 0; col -= 2) {
+      if (col === 6) col--; // Saltar la columna de sincronización
 
-      for (let offset = 0; offset <= 1; offset++) {
-        const x = columnas - offset;
-        const y = fila;
-
-        if (x >= 0 && y >= 0 && x < 25 && y < 25 && !ocupado[x][y]) {
-          ocupado[x][y] = true;
-          const bit = flujoDeBits[indiceDeBit++];
-          this.graphics.fillStyle = (bit === '0') ? "black" : "white";
-          this.dibujarPixel(x, y);
-
+      let fila = 24;
+      while (fila >= 0) {
+        for (let dx = 0; dx <= 1; dx++) {
+          const x = col - dx;
+          const y = fila;
+          if (x >= 0 && y >= 0 && x < 25 && y < 25 && !ocupado[x][y]) {
+            if (indiceDeBit >= flujoDeBits.length) break;
+            const bit = flujoDeBits[indiceDeBit++];
+            this.graphics.fillStyle = (bit === '1') ? "black" : "white";
+            this.dibujarPixel(x, y);
+            ocupado[x][y] = true;
+          }
         }
-      }
-
-      fila += dir;
-      if (fila < 0 || fila >= 25) {
-        dir *= -1;
-        columnas -= 2;
-        fila += dir;
+        fila--; // Sigue subiendo aunque haya saltado
       }
     }
+
+
 
     // Relleno aleatorio de celdas restantes
     for (let x = 0; x < 25; x++) {
@@ -208,11 +201,11 @@ export class CanvasLocal {
     }
 
     // Cuadrícula de fondo para representarlo como el video
-    //this.graphics.strokeStyle = "#ccc";
-    // for (let x = 0; x <= 25; x++)
-    //   this.drawLine(this.iX(x), this.iY(0), this.iX(x), this.iY(25));
-    // for (let y = 0; y <= 25; y++)
-    //   this.drawLine(this.iX(0), this.iY(y), this.iX(25), this.iY(y));
+    this.graphics.strokeStyle = "#ccc";
+    for (let x = 0; x <= 25; x++)
+      this.drawLine(this.iX(x), this.iY(0), this.iX(x), this.iY(25));
+    for (let y = 0; y <= 25; y++)
+      this.drawLine(this.iX(0), this.iY(y), this.iX(25), this.iY(y));
   }
 }
 
@@ -227,12 +220,11 @@ export function setupChartControls(canvasLocal: CanvasLocal): void {
     // Remueve los espacion en blanco iniciales y los finales
     const espaciosBlancos = value.trim();
 
-    // Divide la matriz de entrada en una matriz de caracteres
+    // El texto se convierte en una lista de caracteres
     const procesarDatos = espaciosBlancos.split('');
 
-    // Filter out any invalid characters (only alphanumeric and allowed symbols)
-    const caracteresValidos = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
-    return procesarDatos.filter(char => caracteresValidos.includes(char.toUpperCase()));
+    return procesarDatos;
+
   }
   //se asignan los eventos a los botones del formulario
   btnDibujar.addEventListener("click", () => {
