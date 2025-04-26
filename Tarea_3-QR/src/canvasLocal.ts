@@ -109,7 +109,7 @@ export class CanvasLocal {
 
     //const datos = "escueladeciencias.com";
     const ocupado: boolean[][] = Array.from({ length: 25 }, () => Array(25).fill(false));
-
+    
     // Dibuja el patrón de posición en las esquinas
     const marcarPatronPosicion = (x: number, y: number) => {
       for (let i = -1; i < 8; i++) {
@@ -153,7 +153,7 @@ export class CanvasLocal {
     bits.push(this.datos.length.toString(2).padStart(8, '0'));
 
     //Conversion de datos en ASCII a binario
-    for (const c of this.datos) {
+    for(const c of this.datos){
       const ascii = c.charCodeAt(0);
       bits.push(ascii.toString(2).padStart(8, '0'));
     }
@@ -164,28 +164,26 @@ export class CanvasLocal {
     let indiceDeBit = 0;
 
     //recorre el flujo de bits y dibuja los pixeles en el canvas mientras se asegura de que no se sobrepase el limite del canvas
-    // Siempre de derecha a izquierda
-    for (let col = 24; col >= 0; col -= 2) {
-      if (col === 6) col--; // Saltar la columna de sincronización
+    for (let col = 24; col >= 0; col -= 2){
+      if (col === 6) col--;
+      // Dibuja dos celdas en cada iteración
+      for (let paso = 0; paso < 25 && indiceDeBit < flujoDeBits.length; paso++) {
+        const fila = subir ? 24 - paso : paso;
 
-      let fila = 24;
-      while (fila >= 0) {
-        for (let dx = 0; dx <= 1; dx++) {
+        
+        for (let dx = 0; dx <= 1; dx++){
           const x = col - dx;
           const y = fila;
           if (x >= 0 && y >= 0 && x < 25 && y < 25 && !ocupado[x][y]) {
-            if (indiceDeBit >= flujoDeBits.length) break;
             const bit = flujoDeBits[indiceDeBit++];
             this.graphics.fillStyle = (bit === '1') ? "black" : "white";
             this.dibujarPixel(x, y);
             ocupado[x][y] = true;
           }
         }
-        fila--; // Sigue subiendo aunque haya saltado
       }
+      subir = !subir;
     }
-
-
 
     // Relleno aleatorio de celdas restantes
     for (let x = 0; x < 25; x++) {
@@ -201,11 +199,11 @@ export class CanvasLocal {
     }
 
     // Cuadrícula de fondo para representarlo como el video
-    this.graphics.strokeStyle = "#ccc";
-    for (let x = 0; x <= 25; x++)
-      this.drawLine(this.iX(x), this.iY(0), this.iX(x), this.iY(25));
-    for (let y = 0; y <= 25; y++)
-      this.drawLine(this.iX(0), this.iY(y), this.iX(25), this.iY(y));
+     this.graphics.strokeStyle = "#ccc";
+      for (let x = 0; x <= 25; x++)
+        this.drawLine(this.iX(x), this.iY(0), this.iX(x), this.iY(25));
+      for (let y = 0; y <= 25; y++)
+        this.drawLine(this.iX(0), this.iY(y), this.iX(25), this.iY(y));
   }
 }
 
