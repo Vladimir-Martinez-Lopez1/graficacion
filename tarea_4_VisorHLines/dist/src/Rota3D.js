@@ -1,4 +1,4 @@
-import { Point3D } from './Point3D.js';
+import { Point3D } from './point3D.js';
 var Rota3D = /** @class */ (function () {
     function Rota3D() {
     }

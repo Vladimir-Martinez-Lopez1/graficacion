@@ -1,6 +1,6 @@
-import { Point2D } from './Point2D.js';
+import { Point2D } from './point2D.js';
 import { Dimension } from './Dimension.js';
-import { Point3D } from './Point3D.js';
+import { Point3D } from './point3D.js';
 import { Tools2D } from './Tools2D.js';
 var CvHLines = /** @class */ (function () {
     function CvHLines(g, canvas) {
