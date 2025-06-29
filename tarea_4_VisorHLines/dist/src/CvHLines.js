@@ -81,6 +81,21 @@ var CvHLines = /** @class */ (function () {
         var vScr = this.obj.getVScr();
         //Point3D[] e = obj.getE();
         //Point2D[] vScr = obj.getVScr();
+        //color gris relleno
+        for (var i = 0; i < this.nTria; i++) {
+            var tri = this.tr[i];
+            var a = vScr[tri.iA];
+            var b = vScr[tri.iB];
+            var c = vScr[tri.iC];
+            this.g.beginPath();
+            this.g.moveTo(this.iX(a.x), this.iY(a.y));
+            this.g.lineTo(this.iX(b.x), this.iY(b.y));
+            this.g.lineTo(this.iX(c.x), this.iY(c.y));
+            this.g.closePath();
+            this.g.fillStyle = 'rgb(73, 158, 85)'; // color rellenp
+            //this.g.globalAlpha = 1.0; // Opcional: opacidad total
+            this.g.fill();
+        }
         for (var i = 0; i < this.nVertices; i++) {
             for (var j = 0; j < this.nConnect[i]; j++) {
                 var jj = this.connect[i][j];
@@ -154,6 +169,10 @@ var CvHLines = /** @class */ (function () {
     CvHLines.prototype.drawLine = function (g, px1, py1, px2, py2) {
         var x1 = this.iX(px1), y1 = this.iY(py1), x2 = this.iX(px2), y2 = this.iY(py2);
         if (x1 != x2 || y1 != y2) {
+            g.lineWidth = 0.5; //Modifica el grosor de linea
+            //g.strokeStyle = '#FF0000'; //Color de linea rojo
+            //g.strokeStyle = 'rgb(22, 255, 1)'; // Gris mas intenso
+            g.strokeStyle = 'rgb(119, 96, 13)'; // Gris mas intenso
             g.beginPath();
             g.moveTo(x1, y1);
             g.lineTo(x2, y2);

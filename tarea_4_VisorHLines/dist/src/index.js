@@ -11,6 +11,38 @@ graphics = canvas.getContext('2d');
 var cv;
 var obj;
 var ang = 0;
+var intervaloAspa = undefined;
+var intervaloCabeza = undefined;
+var tiempoIntervaloAspa = 50; // Tiempo en ms, menor = más rápido
+var tiempoIntervaloCabeza = 100; // Puedes ajustar este valor si quieres diferente velocidad
+var modoGiro = 'cabezaDer';
+function setintervaloAspa() {
+    if (intervaloAspa)
+        clearInterval(intervaloAspa);
+    intervaloAspa = setInterval(function () {
+        pza1DerFunc();
+    }, tiempoIntervaloAspa);
+}
+function setintervaloCabeza() {
+    if (intervaloCabeza)
+        clearInterval(intervaloCabeza);
+    intervaloCabeza = setInterval(function () {
+        if (modoGiro === 'cabezaDer') {
+            var prevAngle = cabezaAngle;
+            pza12DerFunc();
+            if (cabezaAngle === prevAngle) {
+                modoGiro = 'cabezaIzq';
+            }
+        }
+        else if (modoGiro === 'cabezaIzq') {
+            var prevAngle = cabezaAngle;
+            pza12IzqFunc();
+            if (cabezaAngle === prevAngle) {
+                modoGiro = 'cabezaDer';
+            }
+        }
+    }, tiempoIntervaloCabeza);
+}
 function leerArchivo(e) {
     var archivo = e.target.files[0];
     if (!archivo) {
@@ -26,6 +58,11 @@ function leerArchivo(e) {
             cv = new CvHLines(graphics, canvas);
             cv.setObj(obj);
             cv.paint();
+            tiempoIntervaloAspa = 50;
+            tiempoIntervaloCabeza = 100;
+            modoGiro = 'cabezaDer';
+            setintervaloAspa(); // Giro automático de aspas
+            setintervaloCabeza(); // Giro automático de cabeza
         }
     };
     lector.readAsText(archivo);
@@ -63,47 +100,85 @@ function incrDistFunc() {
 function decrDistFunc() {
     vp(0, 0, 0.5);
 }
+//movimiento de la aspa en su propio eje
+//
 function pza1DerFunc() {
     var af = 10;
-    Rota3D.initRotate(obj.w[139], obj.w[140], af * Math.PI / 180);
-    for (var i = 201; i <= 238; i++) {
+    var VerticeCabezaSup = 1639; //vertice guia aspa detras
+    var verticeCabezaInf = 1640; //vertice guia aspa delante
+    var ejeA = obj.w[VerticeCabezaSup];
+    var ejeB = obj.w[verticeCabezaInf];
+    Rota3D.initRotate(ejeA, ejeB, af * Math.PI / 180);
+    //For encargado de rotar las piezas de la cabeza (aspas y motor)
+    for (var i = 552; i <= 1424; i++) {
         obj.w[i] = Rota3D.rotate(obj.w[i]);
     }
     cv.setObj(obj);
     cv.paint();
 }
 function pza1IzqFunc() {
-    var af = -10;
-    Rota3D.initRotate(obj.w[139], obj.w[140], af * Math.PI / 180);
-    for (var i = 201; i <= 238; i++) {
+    var af = -10; //izquirda
+    var VerticeCabezaSup = 1639; //vertice guia aspa detras
+    var verticeCabezaInf = 1640; //vertice guia aspa delante
+    var ejeA = obj.w[VerticeCabezaSup];
+    var ejeB = obj.w[verticeCabezaInf];
+    Rota3D.initRotate(ejeA, ejeB, af * Math.PI / 180);
+    //Aspas (Vértices 552-1424)	
+    //For encargado de rotar las piezas de la cabeza (aspas y motor)
+    for (var i = 552; i <= 1424; i++) {
         obj.w[i] = Rota3D.rotate(obj.w[i]);
     }
     cv.setObj(obj);
     cv.paint();
 }
+//movimiento del motor y aspas del ventilador
+var cabezaAngle = 0; // Ángulo acumulado en radianes
+var cabezaAngleLimit = (Math.PI - 0.01) * 0.4; // Límite menor a 180° (en radianes)
 function pza12DerFunc() {
+    //177-551 motor
+    //552-1424 aspas
     var af = 10;
-    console.log(obj.w[29], obj.w[30], obj.w[6]);
-    Rota3D.initRotate(obj.w[29], obj.w[30], af * Math.PI / 180);
-    for (var i = 101; i <= 140; i++) {
+    var rad = af * Math.PI / 180;
+    if (cabezaAngle + rad > cabezaAngleLimit)
+        return; // No exceder el límite
+    var VerticeCabezaSup = 1633; //25 - 1; // índice base 0 vertices guia
+    var verticeCabezaInf = 1634; //48 - 1; // vertice guia 
+    var ejeA = obj.w[VerticeCabezaSup];
+    var ejeB = obj.w[verticeCabezaInf];
+    Rota3D.initRotate(ejeA, ejeB, rad);
+    for (var i = 177; i <= 551; i++) {
         obj.w[i] = Rota3D.rotate(obj.w[i]);
     }
-    for (var i = 201; i <= 238; i++) {
+    for (var i = 552; i <= 1424; i++) {
         obj.w[i] = Rota3D.rotate(obj.w[i]);
     }
+    // Vértices guía de aspas
+    obj.w[1639] = Rota3D.rotate(obj.w[1639]);
+    obj.w[1640] = Rota3D.rotate(obj.w[1640]);
+    cabezaAngle += rad; // Actualizar el ángulo acumulado
     cv.setObj(obj);
     cv.paint();
 }
 function pza12IzqFunc() {
     var af = -10;
-    console.log(obj.w[29], obj.w[30]);
-    Rota3D.initRotate(obj.w[29], obj.w[30], af * Math.PI / 180);
-    for (var i = 101; i <= 140; i++) {
+    var rad = af * Math.PI / 180;
+    if (cabezaAngle + rad < -cabezaAngleLimit)
+        return; // No exceder el límite negativo
+    var VerticeCabezaSup = 1633; //25 - 1; // índice base 0 vertices guia
+    var verticeCabezaInf = 1634; //48 - 1; // vertice guia 
+    var ejeA = obj.w[VerticeCabezaSup];
+    var ejeB = obj.w[verticeCabezaInf];
+    Rota3D.initRotate(ejeA, ejeB, rad);
+    for (var i = 177; i <= 551; i++) {
         obj.w[i] = Rota3D.rotate(obj.w[i]);
     }
-    for (var i = 201; i <= 238; i++) {
+    for (var i = 552; i <= 1424; i++) {
         obj.w[i] = Rota3D.rotate(obj.w[i]);
     }
+    // Vértices guía de aspas
+    obj.w[1639] = Rota3D.rotate(obj.w[1639]);
+    obj.w[1640] = Rota3D.rotate(obj.w[1640]);
+    cabezaAngle += rad;
     cv.setObj(obj);
     cv.paint();
 }
@@ -139,32 +214,6 @@ function makeVizualization(evento) {
         Piy = Pfy;
         vp(0.1 * difX, 0 / 50, 1);
         Pix = Pfx;
-        /*if( Piy>Pfy+1 ){
-          phi += SensibilidadY;
-          vp(0, 0.1*, 1);
-          //cv.redibuja(theta, phi, tamanoObjeto);
-          Piy=Pfy;
-        }
-    
-        if(Pfy>Piy+1){
-          phi -= SensibilidadY;
-          vp(0,-0.1, 1);
-          //cv.redibuja(theta, phi, tamanoObjeto);
-          Piy=Pfy;
-        }*/
-        /*if (Pix > Pfx + 1) {
-          theta += SensibilidadX;
-          vp(0.1, 0, 1);
-          //cv.redibuja(theta, phi, tamanoObjeto);
-          Pix = Pfx;
-        }
-            
-        if (Pfx > Pix + 1) {
-          theta -= SensibilidadX;
-          vp(-0.1, 0, 1);
-          //cv.redibuja(theta, phi, tamanoObjeto);
-          Pix = Pfx;
-        }*/
     }
 }
 function noDraw() {
@@ -173,3 +222,39 @@ function noDraw() {
 canvas.addEventListener('mousedown', handleMouse);
 canvas.addEventListener('mouseup', noDraw);
 canvas.addEventListener('mousemove', makeVizualization);
+function MoverScroll(event) {
+    event.preventDefault();
+    // Aumentar o disminuir la velocidad de rotación de las aspas con el scroll
+    if (event.deltaY < 0) {
+        // Scroll arriba: más rápido
+        tiempoIntervaloAspa = Math.max(5, tiempoIntervaloAspa - 5);
+        setintervaloAspa();
+    }
+    else if (event.deltaY > 0) {
+        // Scroll abajo: más lento
+        tiempoIntervaloAspa = Math.min(500, tiempoIntervaloAspa + 5);
+        setintervaloAspa();
+    }
+}
+canvas.addEventListener('wheel', MoverScroll, { passive: false });
+window.addEventListener('DOMContentLoaded', function () {
+    fetch('ventiladorTerminado_estructurado_limpio.txt')
+        .then(function (response) { return response.text(); })
+        .then(function (contenido) {
+        mostrarContenido(contenido);
+        obj = new Obj3D();
+        if (obj.read(contenido)) {
+            cv = new CvHLines(graphics, canvas);
+            cv.setObj(obj);
+            cv.paint();
+            tiempoIntervaloAspa = 50;
+            tiempoIntervaloCabeza = 100;
+            modoGiro = 'cabezaDer';
+            setintervaloAspa();
+            setintervaloCabeza();
+        }
+    })
+        .catch(function (err) {
+        console.error('No se pudo cargar el archivo por defecto:', err);
+    });
+});
